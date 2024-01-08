@@ -64,8 +64,9 @@ To visualize the episode after it is collected, run
 To train ACT:
     
     # Transfer Cube task
-    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir ckpt --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 8 --dim_feedforward 3200 --num_steps 2000  --lr 1e-5 --seed 0
+    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir ckpt --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed
 
+Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
 
 To evaluate the policy, run the same command but add ``--eval``. This loads the best validation checkpoint.
 The success rate should be around 90% for transfer cube, and around 50% for insertion.
