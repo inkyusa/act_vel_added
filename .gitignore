@@ -140,8 +140,12 @@ dmypy.json
 .pyre/
 
 ckpts/
+ckpt/
+data/
 *log*
 
 *.png
 *.npy
 play.ipynb
+byol-pytorch
+robomimic

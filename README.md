@@ -10,6 +10,9 @@ For real, you would also need to install [Mobile ALOHA](https://github.com/MarkF
 ### Updates:
 You can find all scripted/human demo for simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link).
 
+```shell
+git clone --recursive git@github.com:inkyusa/act_private.git
+```
 
 ### Repo Structure
 - ``imitate_episodes.py`` Train and Evaluate ACT
@@ -24,24 +27,18 @@ You can find all scripted/human demo for simulated environments [here](https://d
 
 
 ### Installation
-
+```shell
     conda create -n aloha python=3.8.10
     conda activate aloha
-    pip install torchvision
-    pip install torch
-    pip install pyquaternion
-    pip install pyyaml
-    pip install rospkg
-    pip install pexpect
-    pip install mujoco
-    pip install dm_control
-    pip install opencv-python
-    pip install matplotlib
-    pip install einops
-    pip install packaging
-    pip install h5py
-    pip install ipython
-    cd act/detr && pip install -e .
+    pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+    
+    pip install pyquaternion pyyaml rospkg pexpect mujoco dm_control opencv-python matplotlib einops packaging h5py ipython wandb diffusers
+    
+    cd act_private/detr
+    pip install -e .
+    cd act_private/robomimic
+    pip install -e .
+```
 
 ### Example Usages
 
@@ -55,17 +52,19 @@ To set up a new terminal, run:
 We use ``sim_transfer_cube_scripted`` task in the examples below. Another option is ``sim_insertion_scripted``.
 To generated 50 episodes of scripted data, run:
 
-    python3 record_sim_episodes.py --task_name sim_transfer_cube_scripted --dataset_dir <data save dir> --num_episodes 50
+    python3 record_sim_episodes.py --task_name sim_transfer_cube_scripted --dataset_dir data --num_episodes 50
+
+This will create `data` folder under the root repository.
 
 To can add the flag ``--onscreen_render`` to see real-time rendering.
 To visualize the episode after it is collected, run
 
-    python3 visualize_episodes.py --dataset_dir <data save dir> --episode_idx 0
+    python3 visualize_episodes.py --dataset_dir data/sim_transfer_cube_scripted/ --episode_idx 0
 
 To train ACT:
     
     # Transfer Cube task
-    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir <ckpt dir> --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 8 --dim_feedforward 3200 --num_epochs 2000  --lr 1e-5 --seed 0
+    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir ckpt --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 8 --dim_feedforward 3200 --num_steps 2000  --lr 1e-5 --seed 0
 
 
 To evaluate the policy, run the same command but add ``--eval``. This loads the best validation checkpoint.
