@@ -1,3 +1,8 @@
 [submodule "byol-pytorch"]
 	path = byol-pytorch
 	url = https://github.com/lucidrains/byol-pytorch.git
+
+[submodule "robomimic"]
+	path = robomimic
+	url = https://github.com/ARISE-Initiative/robomimic.git
+	branch = diffusion-policy-mg
