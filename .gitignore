@@ -149,3 +149,5 @@ data/
 play.ipynb
 byol-pytorch
 robomimic
+*.ckpt
+*.pkl
