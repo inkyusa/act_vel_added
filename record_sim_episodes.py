@@ -43,9 +43,12 @@ def main(args):
         policy_cls = PickAndTransferPolicy
     else:
         raise NotImplementedError
-
+    roll_out_success = False
+    replay_success = False
     success = []
-    for episode_idx in range(num_episodes):
+    episode_idx = 0
+    # for episode_idx in range(num_episodes):
+    while episode_idx != num_episodes:
         print(f'{episode_idx=}')
         print('Rollout out EE space scripted policy')
         # setup the environment
@@ -71,6 +74,7 @@ def main(args):
         episode_max_reward = np.max([ts.reward for ts in episode[1:]])
         if episode_max_reward == env.task.max_reward:
             print(f"{episode_idx=} Successful, {episode_return=}")
+            roll_out_success = True
         else:
             print(f"{episode_idx=} Failed")
 
@@ -115,6 +119,7 @@ def main(args):
         if episode_max_reward == env.task.max_reward:
             success.append(1)
             print(f"{episode_idx=} Successful, {episode_return=}")
+            replay_success = True
         else:
             success.append(0)
             print(f"{episode_idx=} Failed")
@@ -131,51 +136,54 @@ def main(args):
 
         action                  (14,)         'float64'
         """
-
-        data_dict = {
-            '/observations/qpos': [],
-            '/observations/qvel': [],
-            '/action': [],
-        }
-        for cam_name in camera_names:
-            data_dict[f'/observations/images/{cam_name}'] = []
-
-        # because the replaying, there will be eps_len + 1 actions and eps_len + 2 timesteps
-        # truncate here to be consistent
-        joint_traj = joint_traj[:-1]
-        episode_replay = episode_replay[:-1]
-
-        # len(joint_traj) i.e. actions: max_timesteps
-        # len(episode_replay) i.e. time steps: max_timesteps + 1
-        max_timesteps = len(joint_traj)
-        while joint_traj:
-            action = joint_traj.pop(0)
-            ts = episode_replay.pop(0)
-            data_dict['/observations/qpos'].append(ts.observation['qpos'])
-            data_dict['/observations/qvel'].append(ts.observation['qvel'])
-            data_dict['/action'].append(action)
+        if roll_out_success and replay_success:
+            data_dict = {
+                '/observations/qpos': [],
+                '/observations/qvel': [],
+                '/action': [],
+            }
             for cam_name in camera_names:
-                data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
+                data_dict[f'/observations/images/{cam_name}'] = []
 
-        # HDF5
-        t0 = time.time()
-        dataset_path = os.path.join(dataset_dir, f'episode_{episode_idx}')
-        with h5py.File(dataset_path + '.hdf5', 'w', rdcc_nbytes=1024 ** 2 * 2) as root:
-            root.attrs['sim'] = True
-            obs = root.create_group('observations')
-            image = obs.create_group('images')
-            for cam_name in camera_names:
-                _ = image.create_dataset(cam_name, (max_timesteps, 480, 640, 3), dtype='uint8',
-                                         chunks=(1, 480, 640, 3), )
-            # compression='gzip',compression_opts=2,)
-            # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
-            qpos = obs.create_dataset('qpos', (max_timesteps, 14))
-            qvel = obs.create_dataset('qvel', (max_timesteps, 14))
-            action = root.create_dataset('action', (max_timesteps, 14))
+            # because the replaying, there will be eps_len + 1 actions and eps_len + 2 timesteps
+            # truncate here to be consistent
+            joint_traj = joint_traj[:-1]
+            episode_replay = episode_replay[:-1]
 
-            for name, array in data_dict.items():
-                root[name][...] = array
-        print(f'Saving: {time.time() - t0:.1f} secs\n')
+            # len(joint_traj) i.e. actions: max_timesteps
+            # len(episode_replay) i.e. time steps: max_timesteps + 1
+            max_timesteps = len(joint_traj)
+            while joint_traj:
+                action = joint_traj.pop(0)
+                ts = episode_replay.pop(0)
+                data_dict['/observations/qpos'].append(ts.observation['qpos'])
+                data_dict['/observations/qvel'].append(ts.observation['qvel'])
+                data_dict['/action'].append(action)
+                for cam_name in camera_names:
+                    data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
+
+            # HDF5
+            t0 = time.time()
+            dataset_path = os.path.join(dataset_dir, f'episode_{episode_idx}')
+            with h5py.File(dataset_path + '.hdf5', 'w', rdcc_nbytes=1024 ** 2 * 2) as root:
+                root.attrs['sim'] = True
+                obs = root.create_group('observations')
+                image = obs.create_group('images')
+                for cam_name in camera_names:
+                    _ = image.create_dataset(cam_name, (max_timesteps, 480, 640, 3), dtype='uint8',
+                                            chunks=(1, 480, 640, 3), )
+                # compression='gzip',compression_opts=2,)
+                # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
+                qpos = obs.create_dataset('qpos', (max_timesteps, 14))
+                qvel = obs.create_dataset('qvel', (max_timesteps, 14))
+                action = root.create_dataset('action', (max_timesteps, 14))
+
+                for name, array in data_dict.items():
+                    root[name][...] = array
+            print(f'Saving: {time.time() - t0:.1f} secs\n')
+            roll_out_success = False
+            replay_success = False
+            episode_idx = episode_idx + 1
 
     print(f'Saved to {dataset_dir}')
     print(f'Success: {np.sum(success)} / {len(success)}')
