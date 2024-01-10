@@ -61,6 +61,8 @@ To visualize the episode after it is collected, run
 
     python3 visualize_episodes.py --dataset_dir data/sim_transfer_cube_scripted/ --episode_idx 0
 
+    for i in {0..50}; do python3 visualize_episodes.py --dataset_dir data/sim/sim_transfer_cube_scripted_3cams --episode_idx $i; done
+
 To train ACT:
     
     # Transfer Cube task
@@ -75,7 +77,7 @@ Videos will be saved to ``<ckpt_dir>`` for each rollout.
 You can also add ``--onscreen_render`` to see real-time rendering during evaluation.
 
 For real-world data where things can be harder to model, train for at least 5000 epochs or 3-4 times the length after the loss has plateaued.
-Please refer to [tuning tips](https://docs.google.com/document/d/1FVIZfoALXg_ZkYKaYVh-qOlaXveq5CtvJHXkY25eYhs/edit?usp=sharing) for more info.
+Please refer to [tuning tips](https://docs.google.com/document/d/13RcPc7SSSkK6wVeIK6J-pj709nPj9Lh_y6eUSNJziEQ/edit?usp=sharing) for more info.
 
-### [ACT tuning tips](https://docs.google.com/document/d/1FVIZfoALXg_ZkYKaYVh-qOlaXveq5CtvJHXkY25eYhs/edit?usp=sharing)
+### [ACT tuning tips](https://docs.google.com/document/d/13RcPc7SSSkK6wVeIK6J-pj709nPj9Lh_y6eUSNJziEQ/edit?usp=sharing)
 TL;DR: if your ACT policy is jerky or pauses in the middle of an episode, just train for longer! Success rate and smoothness can improve way after loss plateaus.

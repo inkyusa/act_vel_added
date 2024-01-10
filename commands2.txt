@@ -1,0 +1,3 @@
+#4090, 20G GPU usage, top cam, 1 hr 13 min training time
+
+python3 imitate_episodes.py --task_name sim_transfer_cube_human --ckpt_dir ckpt/sim_transfer_cube_human --policy_class ACT --kl_weight 10 --chunk_size 50 --hidden_dim 512 --batch_size 64 --dim_feedforward 3200 --num_steps 10000  --lr 3e-5 --seed 0 --save_every 1000
