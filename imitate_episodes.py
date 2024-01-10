@@ -11,6 +11,8 @@ from einops import rearrange
 import wandb
 import time
 from torchvision import transforms
+import datetime
+DATETIME = "{:%Y%m%dT%H%M%S}".format(datetime.datetime.now())
 
 from constants import FPS
 from constants import PUPPET_GRIPPER_JOINT_OPEN
@@ -145,7 +147,10 @@ def main(args):
     config_path = os.path.join(ckpt_dir, 'config.pkl')
     expr_name = ckpt_dir.split('/')[-1]
     if not is_eval:
-        wandb.init(name=expr_name)
+        wandb.init(
+            project = task_name,
+            name=expr_name + '_' + DATETIME,
+        )
         wandb.config.update(config)
     with open(config_path, 'wb') as f:
         pickle.dump(config, f)
