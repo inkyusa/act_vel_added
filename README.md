@@ -52,9 +52,9 @@ To set up a new terminal, run:
 We use ``sim_transfer_cube_scripted`` task in the examples below. Another option is ``sim_insertion_scripted``.
 To generated 50 episodes of scripted data, run:
 
-    python3 record_sim_episodes.py --task_name sim_transfer_cube_scripted --dataset_dir data --num_episodes 50
+    python3 record_sim_episodes_only_success.py --task_name sim_transfer_cube_scripted --dataset_dir data/sim_transfer_cube_scripted_3cams --num_episodes 50
 
-This will create `data` folder under the root repository.
+This will create `data/sim_transfer_cube_scripted_3cams` folder under the root repository with only successful episodes (> 600 rewards)
 
 To can add the flag ``--onscreen_render`` to see real-time rendering.
 To visualize the episode after it is collected, run
