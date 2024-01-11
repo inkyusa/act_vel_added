@@ -45,6 +45,7 @@ def main(args):
         raise NotImplementedError
     roll_out_success = False
     replay_success = False
+    MAX_REWARD = 550
     success = []
     episode_idx = 0
     # for episode_idx in range(num_episodes):
@@ -72,7 +73,7 @@ def main(args):
 
         episode_return = np.sum([ts.reward for ts in episode[1:]])
         episode_max_reward = np.max([ts.reward for ts in episode[1:]])
-        if episode_max_reward == env.task.max_reward and episode_return > 250:
+        if episode_max_reward == env.task.max_reward and episode_return > MAX_REWARD:
             print("=" * 40)
             print(f"{episode_idx=} Successful, {episode_return=}")
             print("=" * 40)
@@ -118,7 +119,7 @@ def main(args):
 
         episode_return = np.sum([ts.reward for ts in episode_replay[1:]])
         episode_max_reward = np.max([ts.reward for ts in episode_replay[1:]])
-        if episode_max_reward == env.task.max_reward and episode_return > 250:
+        if episode_max_reward == env.task.max_reward and episode_return > MAX_REWARD:
             print("=" * 40)
             success.append(1)
             print(f"{episode_idx=} Successful, {episode_return=}")
