@@ -104,6 +104,9 @@ The model should perform above 90% success after 15k steps as shown below
     python3 imitate_episodes.py --task_name sim_insertion_scripted --ckpt_dir ckpt/sim_insertion_scripted_top_angle_cams --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed 0 --save_every 1000
 ```
 
+<img src="assets/wandb_sim_insertion_scripted.png">
+
+
 Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
 
 ### Evaluation ACT:
@@ -123,4 +126,4 @@ TL;DR: if your ACT policy is jerky or pauses in the middle of an episode, just t
 
 ### Trouble shooting:
 * `Error loading /home/user/workspace/act_private/data/sim/sim_insertion_scripted/episode_32.hdf5 in __getitem__` -> check `SIM_TASK_CONFIGS` in `constants.py` file. `dataset_dir`, `camera_names` set properly as of the recorded dataset?
-* Poor successful rate. check the installed python packages (e.g., `Mujoco`, `dm_env`, and `dm_control`). 
+* Poor successful rate. check the installed python packages (e.g., `Mujoco`, `dm_env`, and `dm_control`). see here https://github.com/MarkFzp/act-plus-plus/issues/12
