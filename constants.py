@@ -6,11 +6,11 @@ import os
 DATA_DIR = '/home/inkyu/workspace/act_private/data/sim'
 SIM_TASK_CONFIGS = {
     'sim_transfer_cube_scripted':{
-        'dataset_dir': DATA_DIR + '/sim_transfer_cube_scripted_3cams',
+        'dataset_dir': DATA_DIR + '/sim_transfer_cube_scripted_top_angle_cams',
         'num_episodes': 50,
         'episode_len': 400,
-        'camera_names': ['top', 'left_wrist', 'right_wrist']
-        #'camera_names': ['top']
+        # 'camera_names': ['top', 'left_wrist', 'right_wrist']
+        'camera_names': ['top', 'angle']
     },
 
     'sim_transfer_cube_human':{
@@ -21,10 +21,11 @@ SIM_TASK_CONFIGS = {
     },
 
     'sim_insertion_scripted': {
-        'dataset_dir': DATA_DIR + '/sim_insertion_scripted',
+        'dataset_dir': DATA_DIR + '/sim_insertion_scripted_top_angle_cams',
         'num_episodes': 50,
         'episode_len': 400,
-        'camera_names': ['top', 'left_wrist', 'right_wrist']
+        # 'camera_names': ['top', 'left_wrist', 'right_wrist']
+        'camera_names': ['top', 'angle']
     },
 
     'sim_insertion_human': {

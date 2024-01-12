@@ -25,6 +25,21 @@ git clone --recursive git@github.com:inkyusa/act_private.git
 - ``utils.py`` Utils such as data loading and helper functions
 - ``visualize_episodes.py`` Save videos from a .hdf5 dataset
 
+### Software version
+
+It is important to exactly match the below software package version in order to correctly make sure simulation dataset generation.
+
+| Software   | Version |
+|------------|---------|
+| python     | 3.8.10  |
+| CUDA       | 11.8    |
+| torch      | 2.0.1+cu118  |
+| cuDNN      | 8902    |
+| mujoco     | 2.3.7   |
+| dm_env     | 1.6     |
+| dm_control | 1.0.14  |
+
+
 
 ### Installation
 ```shell
@@ -43,41 +58,69 @@ git clone --recursive git@github.com:inkyusa/act_private.git
 ### Example Usages
 
 To set up a new terminal, run:
-
+```shell
     conda activate aloha
     cd <path to act repo>
-
+```
 ### Simulated experiments
 
-We use ``sim_transfer_cube_scripted`` task in the examples below. Another option is ``sim_insertion_scripted``.
-To generated 50 episodes of scripted data, run:
+We use ``sim_transfer_cube_scripted`` task in the examples below. Another option is ``sim_insertion_scripted``. After running these scripts, you should be able to check `Success: 50 / 50`. Otherwise, check the installed python packages (e.g., `Mujoco`, `dm_env`, and `dm_control`)
 
-    python3 record_sim_episodes_only_success.py --task_name sim_transfer_cube_scripted --dataset_dir data/sim_transfer_cube_scripted_3cams --num_episodes 50
+#### transfer_cube_scripted dataset generation
+To generated 50 episodes of transfer_cube_scripted data, run:
+```shell
+    python3 record_sim_episodes.py --task_name sim_transfer_cube_scripted --dataset_dir data/sim/sim_transfer_cube_scripted_top_angle_cams --num_episodes 50
+```
+This will create `data/sim/sim_transfer_cube_scripted_top_angle_cams` folder under the root repository.
 
-This will create `data/sim_transfer_cube_scripted_3cams` folder under the root repository with only successful episodes (> 600 rewards)
+#### insertion_scripted dataset generation
+```
+python3 record_sim_episodes.py --task_name sim_insertion_scripted --dataset_dir data/sim/sim_insertion_scripted_top_angle_cams --num_episodes 50
+```
 
-To can add the flag ``--onscreen_render`` to see real-time rendering.
-To visualize the episode after it is collected, run
+Adding the flag ``--onscreen_render`` to see real-time rendering.
+To visualize `i` episode after it is collected, run
+```shell
+    python3 visualize_episodes.py --dataset_dir data/sim/sim_transfer_cube_scripted_top_angle_cams/ --episode_idx 0
+```
+or this will visualise all episodes
+```shell
+for i in {0..50}; do python3 visualize_episodes.py --dataset_dir data/sim/sim/sim_transfer_cube_scripted_top_angle_cams --episode_idx $i; done
+```
+### Train ACT:
 
-    python3 visualize_episodes.py --dataset_dir data/sim_transfer_cube_scripted/ --episode_idx 0
-
-    for i in {0..50}; do python3 visualize_episodes.py --dataset_dir data/sim/sim_transfer_cube_scripted_3cams --episode_idx $i; done
-
-To train ACT:
-    
+#### Train sim_transfer_cube_scripted
+```shell
     # Transfer Cube task
-    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir ckpt --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed
+    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir ckpt/sim_transfer_cube_scripted_top_angle_cams --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed 0 --save_every 1000
+```
+The model should perform above 90% success after 15k steps as shown below 
+<img src="assets/wandb_sim_transfer_cube_scripted.png">
+
+
+#### Train sim_insertion_scripted
+```shell
+    # Transfer Cube task
+    python3 imitate_episodes.py --task_name sim_insertion_scripted --ckpt_dir ckpt/sim_insertion_scripted_top_angle_cams --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed 0 --save_every 1000
+```
 
 Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
 
+### Evaluation ACT:
 To evaluate the policy, run the same command but add ``--eval``. This loads the best validation checkpoint.
 The success rate should be around 90% for transfer cube, and around 50% for insertion.
 To enable temporal ensembling, add flag ``--temporal_agg``.
 Videos will be saved to ``<ckpt_dir>`` for each rollout.
 You can also add ``--onscreen_render`` to see real-time rendering during evaluation.
 
+
+
 For real-world data where things can be harder to model, train for at least 5000 epochs or 3-4 times the length after the loss has plateaued.
 Please refer to [tuning tips](https://docs.google.com/document/d/13RcPc7SSSkK6wVeIK6J-pj709nPj9Lh_y6eUSNJziEQ/edit?usp=sharing) for more info.
 
 ### [ACT tuning tips](https://docs.google.com/document/d/13RcPc7SSSkK6wVeIK6J-pj709nPj9Lh_y6eUSNJziEQ/edit?usp=sharing)
 TL;DR: if your ACT policy is jerky or pauses in the middle of an episode, just train for longer! Success rate and smoothness can improve way after loss plateaus.
+
+### Trouble shooting:
+* `Error loading /home/user/workspace/act_private/data/sim/sim_insertion_scripted/episode_32.hdf5 in __getitem__` -> check `SIM_TASK_CONFIGS` in `constants.py` file. `dataset_dir`, `camera_names` set properly as of the recorded dataset?
+* Poor successful rate. check the installed python packages (e.g., `Mujoco`, `dm_env`, and `dm_control`). 
