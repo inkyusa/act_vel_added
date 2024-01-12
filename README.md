@@ -96,7 +96,7 @@ for i in {0..50}; do python3 visualize_episodes.py --dataset_dir data/sim/sim/si
 ```
 The model should perform above 90% success after 15k steps as shown below 
 <img src="assets/wandb_sim_transfer_cube_scripted.png">
-
+<img src="assets/transfer_cube_policy_eval.gif">
 
 #### Train sim_insertion_scripted
 ```shell
@@ -105,7 +105,7 @@ The model should perform above 90% success after 15k steps as shown below
 ```
 
 <img src="assets/wandb_sim_insertion_scripted.png">
-
+<img src="assets/insertion_policy_eval.gif">
 
 Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
 
