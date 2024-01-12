@@ -96,6 +96,8 @@ for i in {0..50}; do python3 visualize_episodes.py --dataset_dir data/sim/sim/si
 ```
 The model should perform above 90% success after 15k steps as shown below 
 <img src="assets/wandb_sim_transfer_cube_scripted.png">
+
+Below demonstrates the evaluation of the best performed policy that we trained from above in various views.
 <img src="assets/transfer_cube_policy_eval.gif">
 
 #### Train sim_insertion_scripted
@@ -104,7 +106,11 @@ The model should perform above 90% success after 15k steps as shown below
     python3 imitate_episodes.py --task_name sim_insertion_scripted --ckpt_dir ckpt/sim_insertion_scripted_top_angle_cams --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed 0 --save_every 1000
 ```
 
+For this task, the model achieved 80% success after 17k iterations.
 <img src="assets/wandb_sim_insertion_scripted.png">
+
+Below demonstrates the evaluation of the best performed policy that we trained from above.
+
 <img src="assets/insertion_policy_eval.gif">
 
 Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
