@@ -122,6 +122,15 @@ To enable temporal ensembling, add flag ``--temporal_agg``.
 Videos will be saved to ``<ckpt_dir>`` for each rollout.
 You can also add ``--onscreen_render`` to see real-time rendering during evaluation.
 
+### Pre-trained weights:
+One can download and test policies that we trained above for the cube transfer and insertion tasks.
+[Sim cube transfer task ckpt](https://drive.google.com/drive/folders/1cfOzGvxdWl3BOwOy2b8whQcEAeoy5PeO?usp=drive_link)
+[Sim insertion task ckpt](https://drive.google.com/drive/folders/107xSeIJjt8nY0i3IllNfNk9Fgz9-Bqe0?usp=sharing)
+
+After downloading these ckpts, if you want to evaluate them, just place them under `ckpt` folder and specify the path for `--ckpt_dir` argument. Below shows an example command to do this.
+```shell
+python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir ckpt/sim_transfer_cube_scripted_top_angle_cams --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed 0 --save_every 1000 --eval
+```
 
 
 For real-world data where things can be harder to model, train for at least 5000 epochs or 3-4 times the length after the loss has plateaued.

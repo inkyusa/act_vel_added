@@ -69,6 +69,7 @@ def save_videos(video, dt, video_path=None):
         all_cam_videos = []
         for cam_name in cam_names:
             all_cam_videos.append(video[cam_name])
+            print(f"cam_name={cam_name}")
         all_cam_videos = np.concatenate(all_cam_videos, axis=2) # width dimension
 
         n_frames, h, w, _ = all_cam_videos.shape
