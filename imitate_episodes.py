@@ -300,8 +300,8 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
 
     # load environment
     if real_robot:
-        from aloha_scripts.robot_utils import move_grippers # requires aloha
-        from aloha_scripts.real_env import make_real_env # requires aloha
+        from mobile_aloha.aloha_scripts.robot_utils import move_grippers # requires aloha
+        from mobile_aloha.aloha_scripts.real_env import make_real_env # requires aloha
         env = make_real_env(init_node=True, setup_robots=True, setup_base=True)
         env_max_reward = 0
     else:
