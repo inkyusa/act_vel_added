@@ -102,7 +102,7 @@ Below demonstrates the evaluation of the best performed policy that we trained f
 
 #### Train sim_insertion_scripted
 ```shell
-    # Transfer Cube task
+    # Insertion task
     python3 imitate_episodes.py --task_name sim_insertion_scripted --ckpt_dir ckpt/sim_insertion_scripted_top_angle_cams --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 20000  --lr 1e-5 --seed 0 --save_every 1000
 ```
 
@@ -112,6 +112,40 @@ For this task, the model achieved 80% success after 17k iterations.
 Below demonstrates the evaluation of the best performed policy that we trained from above.
 
 <img src="assets/insertion_policy_eval.gif">
+
+#### Train sim_transfer_cube_human
+```shell
+    # Transfer Cube task
+    python3 imitate_episodes.py --task_name sim_transfer_cube_human --ckpt_dir ckpt/sim_transfer_cube_human --policy_class ACT --kl_weight 10 --chunk_size 50 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 26500 --lr 1e-5 --seed 0 --save_every 1000
+```
+
+For this task, the model achieved 90% success after 26k iterations.
+<img src="assets/wandb_sim_transfer_cube_human.png">
+
+Below demonstrates the evaluation of the best performed policy that we trained from above.
+
+(Success)
+<img src="assets/sim_transfer_cube_human_success.gif">
+
+(Fail)
+<img src="assets/sim_transfer_cube_human_fail.gif">
+
+#### Train sim_insertion_human (placeholder)
+```shell
+    # Transfer Cube task
+    python3 imitate_episodes.py --task_name sim_insertion_human --ckpt_dir ckpt/sim_insertion_human --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 26500 --lr 1e-5 --seed 0 --save_every 1000
+```
+
+For this task, the model achieved 90% success after 26k iterations.
+<img src="assets/wandb_sim_transfer_cube_human.png">
+
+Below demonstrates the evaluation of the best performed policy that we trained from above.
+
+(Success)
+<img src="assets/sim_transfer_cube_human_success.gif">
+
+(Fail)
+<img src="assets/sim_transfer_cube_human_fail.gif">
 
 Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
 
@@ -124,8 +158,11 @@ You can also add ``--onscreen_render`` to see real-time rendering during evaluat
 
 ### Pre-trained weights:
 One can download and test policies that we trained above for the cube transfer and insertion tasks.
-[Sim cube transfer task ckpt](https://drive.google.com/drive/folders/1cfOzGvxdWl3BOwOy2b8whQcEAeoy5PeO?usp=drive_link)
-[Sim insertion task ckpt](https://drive.google.com/drive/folders/107xSeIJjt8nY0i3IllNfNk9Fgz9-Bqe0?usp=sharing)
+
+* [Sim cube transfer task (scripted) ckpt](https://drive.google.com/drive/folders/1cfOzGvxdWl3BOwOy2b8whQcEAeoy5PeO?usp=drive_link)
+* [Sim insertion task (scripted) ckpt](https://drive.google.com/drive/folders/107xSeIJjt8nY0i3IllNfNk9Fgz9-Bqe0?usp=sharing)
+* Sim cube transfer task (human)
+* Sim insertion task (human)
 
 After downloading these ckpts, if you want to evaluate them, just place them under `ckpt` folder and specify the path for `--ckpt_dir` argument. Below shows an example command to do this.
 ```shell
