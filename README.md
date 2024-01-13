@@ -81,11 +81,11 @@ python3 record_sim_episodes.py --task_name sim_insertion_scripted --dataset_dir 
 Adding the flag ``--onscreen_render`` to see real-time rendering.
 To visualize `i` episode after it is collected, run
 ```shell
-    python3 visualize_episodes.py --dataset_dir data/sim/sim_transfer_cube_scripted_top_angle_cams/ --episode_idx 0
+    python3 visualize_sim_episodes.py --dataset_dir data/sim/sim_transfer_cube_scripted_top_angle_cams/ --episode_idx 0
 ```
 or this will visualise all episodes
 ```shell
-for i in {0..50}; do python3 visualize_episodes.py --dataset_dir data/sim/sim/sim_transfer_cube_scripted_top_angle_cams --episode_idx $i; done
+for i in {0..50}; do python3 visualize_sim_episodes.py --dataset_dir data/sim/sim/sim_transfer_cube_scripted_top_angle_cams --episode_idx $i; done
 ```
 ### Train ACT:
 
@@ -138,6 +138,9 @@ Please refer to [tuning tips](https://docs.google.com/document/d/13RcPc7SSSkK6wV
 
 ### [ACT tuning tips](https://docs.google.com/document/d/13RcPc7SSSkK6wVeIK6J-pj709nPj9Lh_y6eUSNJziEQ/edit?usp=sharing)
 TL;DR: if your ACT policy is jerky or pauses in the middle of an episode, just train for longer! Success rate and smoothness can improve way after loss plateaus.
+
+Note: Mobile-aloha github https://github.com/MarkFzp/mobile-aloha
+
 
 ### Trouble shooting:
 * `Error loading /home/user/workspace/act_private/data/sim/sim_insertion_scripted/episode_32.hdf5 in __getitem__` -> check `SIM_TASK_CONFIGS` in `constants.py` file. `dataset_dir`, `camera_names` set properly as of the recorded dataset?
