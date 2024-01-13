@@ -6,3 +6,6 @@
 	path = robomimic
 	url = https://github.com/ARISE-Initiative/robomimic.git
 	branch = diffusion-policy-mg
+[submodule "mobile-aloha"]
+	path = mobile-aloha
+	url = https://github.com/MarkFzp/mobile-aloha
