@@ -46,8 +46,8 @@ It is important to exactly match the below software package version in order to 
     conda create -n aloha python=3.8.10
     conda activate aloha
     pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
-    
-    pip install pyquaternion pyyaml rospkg pexpect mujoco dm_control opencv-python matplotlib einops packaging h5py ipython wandb diffusers
+    pip install mujoco==2.3.7 dm_env==1.6 dm_control==1.0.14
+    pip install pyquaternion pyyaml rospkg pexpect opencv-python matplotlib einops packaging h5py ipython wandb diffusers
     
     cd act_private/detr
     pip install -e .
