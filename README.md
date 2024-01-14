@@ -130,23 +130,26 @@ Below demonstrates the evaluation of the best performed policy that we trained f
 (Fail)
 <img src="assets/sim_transfer_cube_human_fail.gif">
 
-#### Train sim_insertion_human (placeholder)
+#### Train sim_insertion_human
 ```shell
     # Transfer Cube task
     python3 imitate_episodes.py --task_name sim_insertion_human --ckpt_dir ckpt/sim_insertion_human --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 16 --dim_feedforward 3200 --num_steps 26500 --lr 1e-5 --seed 0 --save_every 1000
 ```
 
-For this task, the model achieved 90% success after 26k iterations.
-<img src="assets/wandb_sim_transfer_cube_human.png">
+For this task, the model achieved 40% best success after 30k iterations.
+<img src="assets/wandb_sim_insertion_human.png">
 
 Below demonstrates the evaluation of the best performed policy that we trained from above.
 
 (Success)
-<img src="assets/sim_transfer_cube_human_success.gif">
+<img src="assets/sim_insertion_human_success.gif">
 
 (Fail)
-<img src="assets/sim_transfer_cube_human_fail.gif">
+<img src="assets/sim_insertion_human_fail.gif">
 
+The model trained with this dataset performs the worst among above 4 tasks. There may exist some room to improve the performance.
+
+### Dataset download (WIP, sharing via Kaggle since dataset is too large~247.7GB)
 Note that you downloaded simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link) and used that dataset for training (only has top view camera so that need to change this in `constants.py` file).
 
 ### Evaluation ACT:
@@ -161,8 +164,8 @@ One can download and test policies that we trained above for the cube transfer a
 
 * [Sim cube transfer task (scripted) ckpt](https://drive.google.com/drive/folders/1cfOzGvxdWl3BOwOy2b8whQcEAeoy5PeO?usp=drive_link)
 * [Sim insertion task (scripted) ckpt](https://drive.google.com/drive/folders/107xSeIJjt8nY0i3IllNfNk9Fgz9-Bqe0?usp=sharing)
-* Sim cube transfer task (human)
-* Sim insertion task (human)
+* [Sim cube transfer task (human) ckpt](https://drive.google.com/drive/folders/1yCuGh0Wn0lgeBrr32xWN4gTA16Vg-TES?usp=drive_link)
+* [Sim insertion task (human) ckpt](https://drive.google.com/drive/folders/1yCuGh0Wn0lgeBrr32xWN4gTA16Vg-TES?usp=drive_link)
 
 After downloading these ckpts, if you want to evaluate them, just place them under `ckpt` folder and specify the path for `--ckpt_dir` argument. Below shows an example command to do this.
 ```shell
