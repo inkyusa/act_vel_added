@@ -164,7 +164,7 @@ One can download and test policies that we trained above for the cube transfer a
 
 * [Sim cube transfer task (scripted) ckpt](https://drive.google.com/drive/folders/1cfOzGvxdWl3BOwOy2b8whQcEAeoy5PeO?usp=drive_link)
 * [Sim insertion task (scripted) ckpt](https://drive.google.com/drive/folders/107xSeIJjt8nY0i3IllNfNk9Fgz9-Bqe0?usp=sharing)
-* [Sim cube transfer task (human) ckpt](https://drive.google.com/drive/folders/1yCuGh0Wn0lgeBrr32xWN4gTA16Vg-TES?usp=drive_link)
+* [Sim cube transfer task (human) ckpt](https://drive.google.com/drive/folders/1n4LKExhcCwt-p9XmeHPPp9jpUXFpJGwA?usp=drive_link)
 * [Sim insertion task (human) ckpt](https://drive.google.com/drive/folders/1yCuGh0Wn0lgeBrr32xWN4gTA16Vg-TES?usp=drive_link)
 
 After downloading these ckpts, if you want to evaluate them, just place them under `ckpt` folder and specify the path for `--ckpt_dir` argument. Below shows an example command to do this.
