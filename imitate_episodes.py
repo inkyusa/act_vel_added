@@ -532,9 +532,9 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
 
 
 def forward_pass(data, policy):
-    image_data, qpos_data, action_data, is_pad = data
-    image_data, qpos_data, action_data, is_pad = image_data.cuda(), qpos_data.cuda(), action_data.cuda(), is_pad.cuda()
-    return policy(qpos_data, image_data, action_data, is_pad) # TODO remove None
+    image_data, qpos_data, qvel_data, action_data, is_pad = data
+    image_data, qpos_data, qvel_data, action_data, is_pad = image_data.cuda(), qpos_data.cuda(), qvel_data.cuda(), action_data.cuda(), is_pad.cuda()
+    return policy(qpos_data, qvel_data, image_data, action_data, is_pad) # TODO remove None
 
 
 def train_bc(train_dataloader, val_dataloader, config):

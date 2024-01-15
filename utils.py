@@ -104,6 +104,7 @@ class EpisodicDataset(torch.utils.data.Dataset):
             # construct observations
             image_data = torch.from_numpy(all_cam_images)
             qpos_data = torch.from_numpy(qpos).float()
+            qvel_data = torch.from_numpy(qvel).float()
             action_data = torch.from_numpy(padded_action).float()
             is_pad = torch.from_numpy(is_pad).bool()
 
@@ -137,17 +138,17 @@ class EpisodicDataset(torch.utils.data.Dataset):
                 action_data = (action_data - self.norm_stats["action_mean"]) / self.norm_stats["action_std"]
 
             qpos_data = (qpos_data - self.norm_stats["qpos_mean"]) / self.norm_stats["qpos_std"]
-
+            qvel_data = (qvel_data - self.norm_stats["qvel_mean"]) / self.norm_stats["qvel_std"]
         except:
             print(f'Error loading {dataset_path} in __getitem__')
             quit()
-
         # print(image_data.dtype, qpos_data.dtype, action_data.dtype, is_pad.dtype)
-        return image_data, qpos_data, action_data, is_pad
+        return image_data, qpos_data, qvel_data, action_data, is_pad
 
 
 def get_norm_stats(dataset_path_list):
     all_qpos_data = []
+    all_qvel_data = []
     all_action_data = []
     all_episode_len = []
 
@@ -169,9 +170,11 @@ def get_norm_stats(dataset_path_list):
             print(e)
             quit()
         all_qpos_data.append(torch.from_numpy(qpos))
+        all_qvel_data.append(torch.from_numpy(qvel))
         all_action_data.append(torch.from_numpy(action))
         all_episode_len.append(len(qpos))
     all_qpos_data = torch.cat(all_qpos_data, dim=0)
+    all_qvel_data = torch.cat(all_qvel_data, dim=0)
     all_action_data = torch.cat(all_action_data, dim=0)
 
     # normalize action data
@@ -184,6 +187,10 @@ def get_norm_stats(dataset_path_list):
     qpos_std = all_qpos_data.std(dim=[0]).float()
     qpos_std = torch.clip(qpos_std, 1e-2, np.inf) # clipping
 
+    qvel_mean = all_qvel_data.mean(dim=[0]).float()
+    qvel_std = all_qvel_data.std(dim=[0]).float()
+    qvel_std = torch.clip(qvel_std, 1e-2, np.inf) # clipping
+
     action_min = all_action_data.min(dim=0).values.float()
     action_max = all_action_data.max(dim=0).values.float()
 
@@ -191,7 +198,9 @@ def get_norm_stats(dataset_path_list):
     stats = {"action_mean": action_mean.numpy(), "action_std": action_std.numpy(),
              "action_min": action_min.numpy() - eps,"action_max": action_max.numpy() + eps,
              "qpos_mean": qpos_mean.numpy(), "qpos_std": qpos_std.numpy(),
-             "example_qpos": qpos}
+             "example_qpos": qpos,
+             "qvel_mean": qvel_mean.numpy(), "qvel_std": qvel_std.numpy(),
+             "example_qvel": qvel}
 
     return stats, all_episode_len
 
