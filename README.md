@@ -85,7 +85,7 @@ To visualize `i` episode after it is collected, run
 ```
 or this will visualise all episodes
 ```shell
-for i in {0..50}; do python3 visualize_sim_episodes.py --dataset_dir data/sim/sim/sim_transfer_cube_scripted_top_angle_cams --episode_idx $i; done
+for i in {0..50}; do python3 visualize_sim_episodes.py --dataset_dir data/sim/sim_transfer_cube_scripted_top_angle_cams --episode_idx $i; done
 ```
 ### Train ACT:
 

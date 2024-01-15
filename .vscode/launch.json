@@ -15,7 +15,7 @@
                 "--task_name",
                 "sim_transfer_cube_scripted",
                 "--ckpt_dir", 
-                "ckpt/sim_transfer_cube_scripted_topcap_gen",
+                "ckpt/sim_transfer_cube_scripted_top_angle_cams",
                 "--policy_class",
                 "ACT",
                 "--kl_weight",
