@@ -228,6 +228,10 @@ class InsertionTask(BimanualViperXTask):
             reward = 3
         if pin_touched: # successful insertion
             reward = 4
+            #Change colour if touched.
+            red_peg_id = physics.model.name2id("peg", 'body')
+            new_color = [0, 1, 0, 1]  # RGBA for blue
+            physics.model.geom_rgba[red_peg_id] = new_color
         return reward
 
 
