@@ -16,6 +16,10 @@ import IPython
 e = IPython.embed
 
 BOX_POSE = [None] # to be changed from outside
+# Function to list names of a given component type
+def list_names(arr, name):
+    return [arr[i] for i in range(len(arr)) if arr[i] != '']
+
 
 def make_sim_env(task_name):
     """
@@ -166,6 +170,10 @@ class TransferCubeTask(BimanualViperXTask):
             reward = 3
         if touch_left_gripper and not touch_table: # successful transfer
             reward = 4
+            #Change colour if touched.
+            box_id = physics.model.name2id("red_box", 'geom')
+            new_color = [0, 1, 0, 1]  # RGBA for green
+            physics.model.geom_rgba[box_id] = new_color
         return reward
 
 
@@ -228,6 +236,10 @@ class InsertionTask(BimanualViperXTask):
             reward = 3
         if pin_touched: # successful insertion
             reward = 4
+            #Change colour if touched.
+            red_peg_id = physics.model.name2id("red_peg", 'geom')
+            new_color = [0, 1, 0, 1]  # RGBA for blue
+            physics.model.geom_rgba[red_peg_id] = new_color
         return reward
 
 

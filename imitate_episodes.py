@@ -292,7 +292,8 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
     #         post_processed_actions = post_process(all_actions.squeeze(0).cpu().numpy())
     #         norm_episode_all_base_actions += actuator_norm(post_processed_actions[:, -2:]).tolist()
 
-    pre_process = lambda s_qpos: (s_qpos - stats['qpos_mean']) / stats['qpos_std']
+    pre_process_qpos = lambda s_qpos: (s_qpos - stats['qpos_mean']) / stats['qpos_std']
+    pre_process_qvel = lambda s_qvel: (s_qvel - stats['qvel_mean']) / stats['qvel_std']
     if policy_class == 'Diffusion':
         post_process = lambda a: ((a + 1) / 2) * (stats['action_max'] - stats['action_min']) + stats['action_min']
     else:
@@ -345,8 +346,10 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
 
         # qpos_history = torch.zeros((1, max_timesteps, state_dim)).cuda()
         qpos_history_raw = np.zeros((max_timesteps, state_dim))
+        qvel_history_raw = np.zeros((max_timesteps, state_dim))
         image_list = [] # for visualization
         qpos_list = []
+        qvel_list = []
         target_qpos_list = []
         rewards = []
         # if use_actuator_net:
@@ -372,9 +375,16 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
                     image_list.append({'main': obs['image']})
                 qpos_numpy = np.array(obs['qpos'])
                 qpos_history_raw[t] = qpos_numpy
-                qpos = pre_process(qpos_numpy)
+                qpos = pre_process_qpos(qpos_numpy) #normalising
                 qpos = torch.from_numpy(qpos).float().cuda().unsqueeze(0)
                 # qpos_history[:, t] = qpos
+
+                qvel_numpy = np.array(obs['qvel'])
+                qvel_history_raw[t] = qvel_numpy
+                qvel = pre_process_qvel(qvel_numpy) #normalising
+                qvel = torch.from_numpy(qvel).float().cuda().unsqueeze(0)
+
+
                 if t % query_frequency == 0:
                     curr_image = get_image(ts, camera_names, rand_crop_resize=(config['policy_class'] == 'Diffusion'))
                 # print('get image: ', time.time() - time2)
@@ -382,7 +392,7 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
                 if t == 0:
                     # warm up
                     for _ in range(10):
-                        policy(qpos, curr_image)
+                        policy(qpos, qvel, curr_image)
                     print('network warm up done')
                     time1 = time.time()
 
@@ -396,10 +406,10 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
                                     vq_sample = latent_model.generate(1, temperature=1, x=None)
                                     print(torch.nonzero(vq_sample[0])[:, 1].cpu().numpy())
                             vq_sample = latent_model.generate(1, temperature=1, x=None)
-                            all_actions = policy(qpos, curr_image, vq_sample=vq_sample)
+                            all_actions = policy(qpos, qvel, curr_image, vq_sample=vq_sample)
                         else:
                             # e()
-                            all_actions = policy(qpos, curr_image)
+                            all_actions = policy(qpos, qvel, curr_image)
                         # if use_actuator_net:
                         #     collect_base_action(all_actions, norm_episode_all_base_actions)
                         if real_robot:
@@ -467,6 +477,7 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
 
                 ### for visualization
                 qpos_list.append(qpos_numpy)
+                qvel_list.append(qvel_numpy)
                 target_qpos_list.append(target_qpos)
                 rewards.append(ts.reward)
                 duration = time.time() - time1
@@ -532,9 +543,9 @@ def eval_bc(config, ckpt_name, save_episode=True, num_rollouts=50):
 
 
 def forward_pass(data, policy):
-    image_data, qpos_data, action_data, is_pad = data
-    image_data, qpos_data, action_data, is_pad = image_data.cuda(), qpos_data.cuda(), action_data.cuda(), is_pad.cuda()
-    return policy(qpos_data, image_data, action_data, is_pad) # TODO remove None
+    image_data, qpos_data, qvel_data, action_data, is_pad = data
+    image_data, qpos_data, qvel_data, action_data, is_pad = image_data.cuda(), qpos_data.cuda(), qvel_data.cuda(), action_data.cuda(), is_pad.cuda()
+    return policy(qpos_data, qvel_data, image_data, action_data, is_pad) # TODO remove None
 
 
 def train_bc(train_dataloader, val_dataloader, config):
