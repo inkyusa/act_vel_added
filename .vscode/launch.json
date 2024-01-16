@@ -35,6 +35,20 @@
                 "--seed",
                 "42"
             ]
+        },
+        {
+            "name": "Python: visualize_sim_episodes",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/visualize_sim_episodes.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--dataset_dir",
+                "data/sim/sim_transfer_cube_scripted_qvel_top_angle_cams",
+                "--episode_idx",
+                "0"
+            ]
         }
     ]
 }
