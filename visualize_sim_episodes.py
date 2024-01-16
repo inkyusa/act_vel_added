@@ -42,6 +42,7 @@ def main(args):
     qpos, qvel, action, image_dict = load_hdf5(dataset_dir, dataset_name)
     save_videos(image_dict, DT, video_path=os.path.join(dataset_dir, dataset_name + '_video.mp4'))
     visualize_joints(qpos, action, plot_path=os.path.join(dataset_dir, dataset_name + '_qpos.png'))
+    visualize_joints_vel(qvel, action, plot_path=os.path.join(dataset_dir, dataset_name + '_qvel.png'))
     # visualize_timestamp(t_list, dataset_path) # TODO addn timestamp back
 
 
@@ -118,6 +119,45 @@ def visualize_joints(qpos_list, command_list, plot_path=None, ylim=None, label_o
     plt.tight_layout()
     plt.savefig(plot_path)
     print(f'Saved qpos plot to: {plot_path}')
+    plt.close()
+
+def visualize_joints_vel(qvel_list, command_list, plot_path=None, ylim=None, label_overwrite=None):
+    if label_overwrite:
+        label1, label2 = label_overwrite
+    else:
+        label1, label2 = 'State', 'Command'
+
+    qvel = np.array(qvel_list) # ts, dim
+    command_vel = np.diff(np.array(command_list), axis = 0) / DT
+    command_vel = np.pad(command_vel, ((1, 0), (0, 0)), mode='constant', constant_values=0)
+
+    num_ts, num_dim = qvel.shape
+    h, w = 2, num_dim
+    num_figs = num_dim
+    fig, axs = plt.subplots(num_figs, 1, figsize=(w, h * num_figs))
+
+    # plot joint velocity state
+    all_names = [name + '_left' for name in STATE_NAMES] + [name + '_right' for name in STATE_NAMES]
+    for dim_idx in range(num_dim):
+        ax = axs[dim_idx]
+        ax.plot(qvel[:, dim_idx], label=label1)
+        ax.set_title(f'Joint {dim_idx}: {all_names[dim_idx]}')
+        ax.legend()
+
+    # plot arm command
+    for dim_idx in range(num_dim):
+        ax = axs[dim_idx]
+        ax.plot(command_vel[:, dim_idx], label=label2)
+        ax.legend()
+
+    if ylim:
+        for dim_idx in range(num_dim):
+            ax = axs[dim_idx]
+            ax.set_ylim(ylim)
+
+    plt.tight_layout()
+    plt.savefig(plot_path)
+    print(f'Saved qvel plot to: {plot_path}')
     plt.close()
 
 def visualize_timestamp(t_list, dataset_path):
