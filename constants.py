@@ -13,6 +13,14 @@ SIM_TASK_CONFIGS = {
         'camera_names': ['top', 'angle']
     },
 
+    'sim_cube_stacking_scripted':{
+        'dataset_dir': DATA_DIR + '/sim_cube_stacking_scripted_qvel_top_angle_cams',
+        'num_episodes': 50,
+        'episode_len': 400,
+        # 'camera_names': ['top', 'left_wrist', 'right_wrist']
+        'camera_names': ['top', 'angle']
+    },
+
     'sim_transfer_cube_human':{
         'dataset_dir': DATA_DIR + '/sim_transfer_cube_human',
         'num_episodes': 50,

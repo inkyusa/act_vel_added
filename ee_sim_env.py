@@ -8,7 +8,7 @@ from constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
 from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
 from constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
 
-from utils import sample_box_pose, sample_insertion_pose
+from utils import sample_box_pose, sample_insertion_pose, sample_box_stacking_pose
 from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
@@ -50,7 +50,7 @@ def make_ee_sim_env(task_name):
     elif 'sim_cube_stacking' in task_name:
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_cube_stacking.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = InsertionEETask(random=False)
+        task = CubeStackingEETask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     else:
@@ -280,18 +280,12 @@ class CubeStackingEETask(BimanualViperXEETask):
     def initialize_episode(self, physics):
         """Sets the state of the environment at the start of each episode."""
         self.initialize_robots(physics)
-        # randomize peg and socket position
-        peg_pose, socket_pose = sample_insertion_pose()
-        id2index = lambda j_id: 16 + (j_id - 16) * 7 # first 16 is robot qpos, 7 is pose dim # hacky
-
-        peg_start_id = physics.model.name2id('red_peg_joint', 'joint')
-        peg_start_idx = id2index(peg_start_id)
-        np.copyto(physics.data.qpos[peg_start_idx : peg_start_idx + 7], peg_pose)
-        # print(f"randomized cube position to {cube_position}")
-
-        socket_start_id = physics.model.name2id('blue_socket_joint', 'joint')
-        socket_start_idx = id2index(socket_start_id)
-        np.copyto(physics.data.qpos[socket_start_idx : socket_start_idx + 7], socket_pose)
+        # randomize box position
+        cube_pose_red, cube_pose_blue = sample_box_stacking_pose()
+        box_start_idx_red = physics.model.name2id('red_box_joint', 'joint')
+        box_start_idx_blue = physics.model.name2id('blue_box_joint', 'joint')
+        np.copyto(physics.data.qpos[box_start_idx_red : box_start_idx_red + 7], cube_pose_red)
+        np.copyto(physics.data.qpos[box_start_idx_blue : box_start_idx_blue + 7], cube_pose_blue)
         # print(f"randomized cube position to {cube_position}")
 
         super().initialize_episode(physics)
@@ -302,7 +296,7 @@ class CubeStackingEETask(BimanualViperXEETask):
         return env_state
 
     def get_reward(self, physics):
-        # return whether peg touches the pin
+        # return whether left gripper is holding the box
         all_contact_pairs = []
         for i_contact in range(physics.data.ncon):
             id_geom_1 = physics.data.contact[i_contact].geom1
@@ -312,30 +306,17 @@ class CubeStackingEETask(BimanualViperXEETask):
             contact_pair = (name_geom_1, name_geom_2)
             all_contact_pairs.append(contact_pair)
 
-        touch_right_gripper = ("red_peg", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
-        touch_left_gripper = ("socket-1", "vx300s_left/10_left_gripper_finger") in all_contact_pairs or \
-                             ("socket-2", "vx300s_left/10_left_gripper_finger") in all_contact_pairs or \
-                             ("socket-3", "vx300s_left/10_left_gripper_finger") in all_contact_pairs or \
-                             ("socket-4", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
-
-        peg_touch_table = ("red_peg", "table") in all_contact_pairs
-        socket_touch_table = ("socket-1", "table") in all_contact_pairs or \
-                             ("socket-2", "table") in all_contact_pairs or \
-                             ("socket-3", "table") in all_contact_pairs or \
-                             ("socket-4", "table") in all_contact_pairs
-        peg_touch_socket = ("red_peg", "socket-1") in all_contact_pairs or \
-                           ("red_peg", "socket-2") in all_contact_pairs or \
-                           ("red_peg", "socket-3") in all_contact_pairs or \
-                           ("red_peg", "socket-4") in all_contact_pairs
-        pin_touched = ("red_peg", "pin") in all_contact_pairs
+        touch_left_gripper = ("red_box", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
+        touch_right_gripper = ("red_box", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
+        touch_table = ("red_box", "table") in all_contact_pairs
 
         reward = 0
-        if touch_left_gripper and touch_right_gripper: # touch both
+        if touch_right_gripper:
             reward = 1
-        if touch_left_gripper and touch_right_gripper and (not peg_touch_table) and (not socket_touch_table): # grasp both
+        if touch_right_gripper and not touch_table: # lifted
             reward = 2
-        if peg_touch_socket and (not peg_touch_table) and (not socket_touch_table): # peg and socket touching
+        if touch_left_gripper: # attempted transfer
             reward = 3
-        if pin_touched: # successful insertion
+        if touch_left_gripper and not touch_table: # successful transfer
             reward = 4
         return reward

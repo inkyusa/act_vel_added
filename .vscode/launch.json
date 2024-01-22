@@ -45,11 +45,12 @@
             "justMyCode": true,
             "args": [
                 "--task_name",
-                "sim_transfer_cube_scripted",
+                "sim_cube_stacking_scripted",
                 "--dataset_dir", 
-                "data/sim/sim_transfer_cube_scripted_qvel_top_angle_cams",
+                "data/sim/sim_cube_stacking_scripted_qvel_top_angle_cams",
                 "--num_episodes",
-                "50"
+                "50",
+                "--onscreen_render"
             ]
         }
     ]

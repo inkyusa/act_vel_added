@@ -149,61 +149,96 @@ class InsertionPolicy(BasePolicy):
         ]
 
 class CubeStackingPolicy(BasePolicy):
-    def __init__(self):
-        # Define initial positions of the cubes and the stack position
-        self.cube_positions = {
-            'red': np.array([x1, y1, z1]),
-            'blue': np.array([x2, y2, z2]),
-        }
-        self.stack_position = np.array([xs, ys, zs])
-        self.stack_height = 0
+    # def __init__(self):
+    #     # Define initial positions of the cubes and the stack position
+    #     self.cube_positions = {
+    #         'red': np.array([x1, y1, z1]),
+    #         'blue': np.array([x2, y2, z2]),
+    #     }
+    #     self.stack_position = np.array([xs, ys, zs])
+    #     self.stack_height = 0
 
     def generate_trajectory(self, ts_first):
         init_mocap_pose_right = ts_first.observation['mocap_pose_right']
         init_mocap_pose_left = ts_first.observation['mocap_pose_left']
 
-        # Define cube stacking order - first red, then blue
-        stacking_order = ['red', 'blue']
+        box_info = np.array(ts_first.observation['env_state'])
+        box_xyz_red = box_info[:3]
+        box_quat_red = box_info[3:3 + 4]
+        box_xyz_blue = box_info[3 + 4:3 + 4 + 3]
+        box_quat_blue = box_info[3 + 4 + 3 :3 + 4 + 3 + 4]
+        gripper_pick_quat = Quaternion(init_mocap_pose_right[3:])
+        gripper_pick_quat = gripper_pick_quat * Quaternion(axis=[0.0, 1.0, 0.0], degrees=-60)
+        meet_left_quat = Quaternion(axis=[1.0, 0.0, 0.0], degrees=90)
 
-        self.left_trajectory = []
-        self.right_trajectory = []
+        meet_xyz = np.array([0, 0.5, 0.25])
+        gripper_pick_quat_right = Quaternion(init_mocap_pose_right[3:])
+        gripper_pick_quat_right = gripper_pick_quat_right * Quaternion(axis=[0.0, 1.0, 0.0], degrees=-60)
 
-        for color in stacking_order:
-            cube_position = self.cube_positions[color]
+        self.left_trajectory = [
+            {"t": 0, "xyz": init_mocap_pose_left[:3], "quat": init_mocap_pose_left[3:], "gripper": 0}, # sleep
+            {"t": 100, "xyz": meet_xyz + np.array([-0.1, 0, -0.02]), "quat": meet_left_quat.elements, "gripper": 1}, # approach meet position
+            {"t": 260, "xyz": meet_xyz + np.array([0.02, 0, -0.02]), "quat": meet_left_quat.elements, "gripper": 1}, # move to meet position
+            {"t": 310, "xyz": meet_xyz + np.array([0.02, 0, -0.02]), "quat": meet_left_quat.elements, "gripper": 0}, # close gripper
+            {"t": 360, "xyz": meet_xyz + np.array([-0.1, 0, -0.02]), "quat": np.array([1, 0, 0, 0]), "gripper": 0}, # move left
+            {"t": 400, "xyz": meet_xyz + np.array([-0.1, 0, -0.02]), "quat": np.array([1, 0, 0, 0]), "gripper": 0}, # stay
+        ]
 
-            # Right arm picks up the cube
-            self.right_trajectory.extend([
-                # Approach cube
-                {"t": t1, "xyz": cube_position + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 1},
-                # Lower to cube
-                {"t": t2, "xyz": cube_position, "quat": init_mocap_pose_right[3:], "gripper": 1},
-                # Grasp cube
-                {"t": t3, "xyz": cube_position, "quat": init_mocap_pose_right[3:], "gripper": 0},
-                # Lift cube
-                {"t": t4, "xyz": cube_position + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 0},
-            ])
+        self.right_trajectory = [
+            {"t": 0, "xyz": init_mocap_pose_right[:3], "quat": init_mocap_pose_right[3:], "gripper": 0}, # sleep
+            {"t": 90, "xyz": box_xyz_red + np.array([0, 0, 0.08]), "quat": gripper_pick_quat.elements, "gripper": 1}, # approach the cube
+            {"t": 130, "xyz": box_xyz_red + np.array([0, 0, -0.015]), "quat": gripper_pick_quat.elements, "gripper": 1}, # go down
+            {"t": 170, "xyz": box_xyz_red + np.array([0, 0, -0.015]), "quat": gripper_pick_quat.elements, "gripper": 0}, # close gripper
+            {"t": 200, "xyz": meet_xyz + np.array([0.05, 0, 0]), "quat": gripper_pick_quat.elements, "gripper": 0}, # approach meet position
+            {"t": 220, "xyz": meet_xyz, "quat": gripper_pick_quat.elements, "gripper": 0}, # move to meet position
+            {"t": 310, "xyz": meet_xyz, "quat": gripper_pick_quat.elements, "gripper": 1}, # open gripper
+            {"t": 360, "xyz": meet_xyz + np.array([0.1, 0, 0]), "quat": gripper_pick_quat.elements, "gripper": 1}, # move to right
+            {"t": 400, "xyz": meet_xyz + np.array([0.1, 0, 0]), "quat": gripper_pick_quat.elements, "gripper": 1}, # stay
+        ]
 
-            # Left arm positions for stacking
-            stack_xyz = self.stack_position + np.array([0, 0, self.stack_height])
-            self.left_trajectory.extend([
-                # Move to stack position
-                {"t": t5, "xyz": stack_xyz, "quat": init_mocap_pose_left[3:], "gripper": 0},
-                # Adjust to assist stacking
-                {"t": t6, "xyz": stack_xyz + np.array([0.05, 0, 0]), "quat": init_mocap_pose_left[3:], "gripper": 1},
-            ])
 
-            # Right arm stacks the cube
-            self.right_trajectory.extend([
-                # Move to stack
-                {"t": t7, "xyz": stack_xyz + np.array([0, 0, 0.05]), "quat": init_mocap_pose_right[3:], "gripper": 0},
-                # Release cube
-                {"t": t8, "xyz": stack_xyz, "quat": init_mocap_pose_right[3:], "gripper": 1},
-                # Move away
-                {"t": t9, "xyz": stack_xyz + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 1},
-            ])
+        # # Define cube stacking order - first red, then blue
+        # stacking_order = ['red', 'blue']
 
-            # Update stack height for the next cube
-            self.stack_height += cube_height
+        # self.left_trajectory = []
+        # self.right_trajectory = []
+
+        # for color in stacking_order:
+        #     cube_position = self.cube_positions[color]
+
+        #     # Right arm picks up the cube
+        #     self.right_trajectory.extend([
+        #         # Approach cube
+        #         {"t": t1, "xyz": cube_position + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 1},
+        #         # Lower to cube
+        #         {"t": t2, "xyz": cube_position, "quat": init_mocap_pose_right[3:], "gripper": 1},
+        #         # Grasp cube
+        #         {"t": t3, "xyz": cube_position, "quat": init_mocap_pose_right[3:], "gripper": 0},
+        #         # Lift cube
+        #         {"t": t4, "xyz": cube_position + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 0},
+        #     ])
+
+        #     # Left arm positions for stacking
+        #     stack_xyz = self.stack_position + np.array([0, 0, self.stack_height])
+        #     self.left_trajectory.extend([
+        #         # Move to stack position
+        #         {"t": t5, "xyz": stack_xyz, "quat": init_mocap_pose_left[3:], "gripper": 0},
+        #         # Adjust to assist stacking
+        #         {"t": t6, "xyz": stack_xyz + np.array([0.05, 0, 0]), "quat": init_mocap_pose_left[3:], "gripper": 1},
+        #     ])
+
+        #     # Right arm stacks the cube
+        #     self.right_trajectory.extend([
+        #         # Move to stack
+        #         {"t": t7, "xyz": stack_xyz + np.array([0, 0, 0.05]), "quat": init_mocap_pose_right[3:], "gripper": 0},
+        #         # Release cube
+        #         {"t": t8, "xyz": stack_xyz, "quat": init_mocap_pose_right[3:], "gripper": 1},
+        #         # Move away
+        #         {"t": t9, "xyz": stack_xyz + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 1},
+        #     ])
+
+        #     # Update stack height for the next cube
+        #     self.stack_height += cube_height
 
             # Increment the time markers (t1, t2, etc.) for the next iteration
 
