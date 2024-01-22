@@ -148,41 +148,66 @@ class InsertionPolicy(BasePolicy):
 
         ]
 
-class SortingPolicy(BasePolicy):
+class CubeStackingPolicy(BasePolicy):
+    def __init__(self):
+        # Define initial positions of the cubes and the stack position
+        self.cube_positions = {
+            'red': np.array([x1, y1, z1]),
+            'blue': np.array([x2, y2, z2]),
+        }
+        self.stack_position = np.array([xs, ys, zs])
+        self.stack_height = 0
+
     def generate_trajectory(self, ts_first):
         init_mocap_pose_right = ts_first.observation['mocap_pose_right']
         init_mocap_pose_left = ts_first.observation['mocap_pose_left']
 
-        object_info = np.array(ts_first.observation['env_state'])
-        object_xyz = object_info[:3]
-        object_color = object_info[3]  # Assuming the color info is in the fourth element
+        # Define cube stacking order - first red, then blue
+        stacking_order = ['red', 'blue']
 
-        gripper_pick_quat = Quaternion(init_mocap_pose_right[3:])
-        gripper_pick_quat = gripper_pick_quat * Quaternion(axis=[0.0, 1.0, 0.0], degrees=-60)
+        self.left_trajectory = []
+        self.right_trajectory = []
 
-        # Define bin locations
-        red_bin_xyz = np.array([1.0, 0.5, 0.25])
-        blue_bin_xyz = np.array([-1.0, 0.5, 0.25])
+        for color in stacking_order:
+            cube_position = self.cube_positions[color]
 
-        # Determine target bin based on color
-        target_bin_xyz = red_bin_xyz if object_color == 'red' else blue_bin_xyz
+            # Right arm picks up the cube
+            self.right_trajectory.extend([
+                # Approach cube
+                {"t": t1, "xyz": cube_position + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 1},
+                # Lower to cube
+                {"t": t2, "xyz": cube_position, "quat": init_mocap_pose_right[3:], "gripper": 1},
+                # Grasp cube
+                {"t": t3, "xyz": cube_position, "quat": init_mocap_pose_right[3:], "gripper": 0},
+                # Lift cube
+                {"t": t4, "xyz": cube_position + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 0},
+            ])
 
-        self.left_trajectory = [
-            # Existing trajectory for left arm...
-        ]
+            # Left arm positions for stacking
+            stack_xyz = self.stack_position + np.array([0, 0, self.stack_height])
+            self.left_trajectory.extend([
+                # Move to stack position
+                {"t": t5, "xyz": stack_xyz, "quat": init_mocap_pose_left[3:], "gripper": 0},
+                # Adjust to assist stacking
+                {"t": t6, "xyz": stack_xyz + np.array([0.05, 0, 0]), "quat": init_mocap_pose_left[3:], "gripper": 1},
+            ])
 
-        self.right_trajectory = [
-            {"t": 0, "xyz": init_mocap_pose_right[:3], "quat": init_mocap_pose_right[3:], "gripper": 0},
-            {"t": 90, "xyz": object_xyz + np.array([0, 0, 0.08]), "quat": gripper_pick_quat.elements, "gripper": 1},
-            {"t": 130, "xyz": object_xyz + np.array([0, 0, -0.015]), "quat": gripper_pick_quat.elements, "gripper": 1},
-            {"t": 170, "xyz": object_xyz + np.array([0, 0, -0.015]), "quat": gripper_pick_quat.elements, "gripper": 0},
-            # Trajectory to move to the target bin
-            {"t": 250, "xyz": target_bin_xyz + np.array([0, 0, 0.2]), "quat": gripper_pick_quat.elements, "gripper": 0},
-            {"t": 300, "xyz": target_bin_xyz, "quat": gripper_pick_quat.elements, "gripper": 0},
-            {"t": 350, "xyz": target_bin_xyz, "quat": gripper_pick_quat.elements, "gripper": 1},
-            # Move away from the bin
-            {"t": 400, "xyz": target_bin_xyz + np.array([0, 0, 0.2]), "quat": gripper_pick_quat.elements, "gripper": 1},
-        ]
+            # Right arm stacks the cube
+            self.right_trajectory.extend([
+                # Move to stack
+                {"t": t7, "xyz": stack_xyz + np.array([0, 0, 0.05]), "quat": init_mocap_pose_right[3:], "gripper": 0},
+                # Release cube
+                {"t": t8, "xyz": stack_xyz, "quat": init_mocap_pose_right[3:], "gripper": 1},
+                # Move away
+                {"t": t9, "xyz": stack_xyz + np.array([0, 0, 0.1]), "quat": init_mocap_pose_right[3:], "gripper": 1},
+            ])
+
+            # Update stack height for the next cube
+            self.stack_height += cube_height
+
+            # Increment the time markers (t1, t2, etc.) for the next iteration
+
+        # Additional code to ensure the trajectories are synchronized and safe
 
 def test_policy(task_name):
     # example rolling out pick_and_transfer policy
