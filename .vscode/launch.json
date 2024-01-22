@@ -37,17 +37,19 @@
             ]
         },
         {
-            "name": "Python: visualize_sim_episodes",
+            "name": "Python: record sim episodes",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/visualize_sim_episodes.py",
+            "program": "${workspaceFolder}/record_sim_episodes.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "--dataset_dir",
+                "--task_name",
+                "sim_transfer_cube_scripted",
+                "--dataset_dir", 
                 "data/sim/sim_transfer_cube_scripted_qvel_top_angle_cams",
-                "--episode_idx",
-                "0"
+                "--num_episodes",
+                "50"
             ]
         }
     ]

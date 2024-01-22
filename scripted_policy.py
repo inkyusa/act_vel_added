@@ -148,6 +148,41 @@ class InsertionPolicy(BasePolicy):
 
         ]
 
+class SortingPolicy(BasePolicy):
+    def generate_trajectory(self, ts_first):
+        init_mocap_pose_right = ts_first.observation['mocap_pose_right']
+        init_mocap_pose_left = ts_first.observation['mocap_pose_left']
+
+        object_info = np.array(ts_first.observation['env_state'])
+        object_xyz = object_info[:3]
+        object_color = object_info[3]  # Assuming the color info is in the fourth element
+
+        gripper_pick_quat = Quaternion(init_mocap_pose_right[3:])
+        gripper_pick_quat = gripper_pick_quat * Quaternion(axis=[0.0, 1.0, 0.0], degrees=-60)
+
+        # Define bin locations
+        red_bin_xyz = np.array([1.0, 0.5, 0.25])
+        blue_bin_xyz = np.array([-1.0, 0.5, 0.25])
+
+        # Determine target bin based on color
+        target_bin_xyz = red_bin_xyz if object_color == 'red' else blue_bin_xyz
+
+        self.left_trajectory = [
+            # Existing trajectory for left arm...
+        ]
+
+        self.right_trajectory = [
+            {"t": 0, "xyz": init_mocap_pose_right[:3], "quat": init_mocap_pose_right[3:], "gripper": 0},
+            {"t": 90, "xyz": object_xyz + np.array([0, 0, 0.08]), "quat": gripper_pick_quat.elements, "gripper": 1},
+            {"t": 130, "xyz": object_xyz + np.array([0, 0, -0.015]), "quat": gripper_pick_quat.elements, "gripper": 1},
+            {"t": 170, "xyz": object_xyz + np.array([0, 0, -0.015]), "quat": gripper_pick_quat.elements, "gripper": 0},
+            # Trajectory to move to the target bin
+            {"t": 250, "xyz": target_bin_xyz + np.array([0, 0, 0.2]), "quat": gripper_pick_quat.elements, "gripper": 0},
+            {"t": 300, "xyz": target_bin_xyz, "quat": gripper_pick_quat.elements, "gripper": 0},
+            {"t": 350, "xyz": target_bin_xyz, "quat": gripper_pick_quat.elements, "gripper": 1},
+            # Move away from the bin
+            {"t": 400, "xyz": target_bin_xyz + np.array([0, 0, 0.2]), "quat": gripper_pick_quat.elements, "gripper": 1},
+        ]
 
 def test_policy(task_name):
     # example rolling out pick_and_transfer policy
@@ -186,6 +221,7 @@ def test_policy(task_name):
             print(f"{episode_idx=} Successful, {episode_return=}")
         else:
             print(f"{episode_idx=} Failed")
+
 
 
 if __name__ == '__main__':
