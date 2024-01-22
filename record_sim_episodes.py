@@ -8,7 +8,7 @@ import h5py
 from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, SIM_TASK_CONFIGS
 from ee_sim_env import make_ee_sim_env
 from sim_env import make_sim_env, BOX_POSE
-from scripted_policy import PickAndTransferPolicy, InsertionPolicy, SortingPolicy
+from scripted_policy import PickAndTransferPolicy, InsertionPolicy, CubeStackingPolicy
 
 import IPython
 e = IPython.embed
@@ -41,8 +41,8 @@ def main(args):
         policy_cls = InsertionPolicy
     elif task_name == 'sim_transfer_cube_scripted_mirror':
         policy_cls = PickAndTransferPolicy
-    elif task_name == 'sim_sorting_scripted':
-        policy_cls = SortingPolicy
+    elif task_name == 'sim_cube_stacking_scripted':
+        policy_cls = CubeStackingPolicy
     else:
         raise NotImplementedError
     success = []
