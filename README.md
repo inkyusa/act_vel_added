@@ -6,6 +6,10 @@
 This repo contains the implementation of ACT, Diffusion Policy and VINN, together with 2 simulated environments:
 Transfer Cube and Bimanual Insertion. You can train and evaluate them in sim or real.
 For real, you would also need to install [Mobile ALOHA](https://github.com/MarkFzp/mobile-aloha). This repo is forked from the [ACT repo](https://github.com/tonyzhaozh/act).
+The main updates/differences to the original repo are as follow;
+* added all joint velocities to the state that improves successful rate
+* added some homebrewed performance evaluations (plots and vides)
+* fixed some dependendy issues and possible troubleshooting guide.
 
 ### Updates:
 You can find all scripted/human demo for simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link).
