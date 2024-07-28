@@ -1,4 +1,4 @@
-# Imitation Learning algorithms and Co-training for Mobile ALOHA
+# Imitation Learning algorithms and Co-training for Mobile ALOHA (velocity added)
 
 
 #### Project Website: https://mobile-aloha.github.io/
